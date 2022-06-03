@@ -1,0 +1,55 @@
+//Source Code PID Controller
+
+//Deklarasi Variabel
+double x_2 = 0;
+double x_1 = 0;
+double x = 0;
+double y_1 = 0;
+double y_2 = 0;
+double y = 0;
+double set_point = 100 ;                          //Set nilai set point
+double T = 0.01 ;                                 //Sampling time
+//Konstanta PID
+double Kp = 0.32;
+double Ki = 2.5;
+double Kd = 0.001;
+
+void setup() 
+{ 
+  Serial.begin(9600);  
+} 
+ 
+void loop() 
+{ 
+  if(Serial.available())
+  {
+    if(Serial.read()=='I')                        // deteksi kode awal FRAME
+    {
+      Serial.print("i");                    //  mengirim kode awal FRAME          
+      Serial.println(y);                      //  mengirim data numerik hasil pembacaan sensor
+      Serial.print("f");                    //  mengirim kode akhir FRAME
+      Serial.flush();                       //  menunggu dulu sampai semua isi pesan selesai dikirim 
+
+      char jenisPerintah = Serial.read();         // membaca kode jenis perintah
+
+      if(jenisPerintah=='S')                      // jika kode jenis perintahnya adalah S artinya ubah posisi servo
+       {
+           double output = Serial.parseFloat();   // ekstraksi nilai numerik data sudut servo nerima output
+           if(Serial.read()=='F')                 // deteksi kode akhir FRAME
+           {
+            Serial.println(output);
+            //hitung pid
+            x_2 = x_1;
+            x_1 = x;
+            y_2 = y_1;
+            y_1 = y;
+            x = set_point - output;
+            y = (Kp + Ki*T/2 + 2*Kd/T)*x + (Ki*T - 4*Kd/T)*x_1 + (-Kp + Ki*T/2 + 2*Kd/T)*x_2 + y_2 ;
+           }
+       }
+                                                   //--- jika kode jenis perintahadalah L artinya Arduino 1 meminta data PID 
+      
+    }
+  }
+  delay(10);
+} 
