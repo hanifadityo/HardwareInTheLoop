@@ -1,0 +1,44 @@
+double x_2 = 0;
+double x_1 = 0;
+double x = 0;
+double y_1 = 0;
+double y = 0;
+double set_point = 100 ;                          //Set nilai set point
+double T = 0.01 ;                                 //Sampling time
+double output; 
+
+void setup() 
+{ 
+  Serial.begin(9600);
+                      
+} 
+ 
+void loop() 
+{ 
+  Serial.print("I");                             //  mengirim kode awal FRAME
+  Serial.print("S");                             //  mengirim kode jenis perintah ubah posisi  servo
+  Serial.print(y);                               //  mengirim nilai numerik sudut servo 
+  Serial.println("F");                           //  mengirim kode akhir FRAME
+                                                  
+  delay(50); 
+                                                  //-- proses pengiriman permintaan data sensor ke arduino 2
+  Serial.print("I");                              //  mengirim kode awal FRAME
+  Serial.print("L");                              //   mengirim kode jenis perintah minta data sensor
+  Serial.println("F");                            //   mengirim kode akhir FRAME
+  Serial.flush();                                 //   menunggu sampai semua pesan telah dikirim
+                                                  //   arduino 1 berganti status sebagai penerima
+  
+  if(Serial.find('i'))                            //   deteksi kode awal FRAME
+  {
+     int data=Serial.parseInt();                  // mengekstrak nilai numerik dari data yang diterima
+      if(Serial.read()=='f')                      // deteksi kode akhir FRAME
+       {
+        //Persamaan plant (motor DC)
+        x_2 = x_1;
+        x_1 = x;
+        x = set_point - output;
+        y_1 = y;
+        y = ((241 - T)*y_1 + 0.9*T*x + 0.9*T*x_1) / (241 + T);
+       }
+  }                                     
+}                                                              
